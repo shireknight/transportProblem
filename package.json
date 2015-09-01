@@ -1,0 +1,24 @@
+{
+  "name": "quoin",
+  "version": "1.0.0",
+  "description": "Coding exercise for Quoin",
+  "main": "exercise.js",
+  "scripts": {
+    "test": "./node_modules/.bin/jasmine-node spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shireknight/transportProblem.git"
+  },
+  "keywords": [
+    "coding",
+    "exercise",
+    "transport"
+  ],
+  "author": "Ben Valentine",
+  "license": "MIT",
+  "dependencies": {
+    "jasmine-node": "^1.14.5",
+    "request": "^2.61.0"
+  }
+}

@@ -1,0 +1,19 @@
+{ "fairs" : {
+    "prepaid": {
+      "bus" : 2.60,
+      "subway" : 3.10,
+      "commuterRail" : 3.10
+    },
+    "monthly": {
+      "bus" : 50.00,
+      "subway" : 75.00,
+      "commuterRail" : 100.00
+    }
+},
+  "discounts" : {
+    "weekend": 0.75,
+    "student": 0.5,
+    "senior": 0.5,
+    "employee": 0
+  }
+}

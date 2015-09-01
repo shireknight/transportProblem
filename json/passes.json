@@ -1,0 +1,4 @@
+{"id":0,"person":{"id":0,"name":"Be","isSenior":true,"isStudent":false,"isEmployee":false,"creditCard":{}},"type":"prepaid","mode":"subway","price":"15.50","rides":"10","balance":"15.50"}
+{"id":0,"person":{"id":0,"name":"Benv","isSenior":false,"isStudent":true,"isEmployee":false,"creditCard":{}},"type":"monthly","mode":"subway","price":"37.50","rides":0,"balance":"37.50"}
+{"id":0,"person":{"id":0,"name":"benv","isSenior":false,"isStudent":true,"isEmployee":false,"creditCard":{}},"type":"prepaid","mode":"subway","price":"15.50","rides":"10","balance":"15.50"}
+{"id":0,"person":{"id":0,"name":"benv","isSenior":true,"isStudent":true,"isEmployee":false,"creditCard":{}},"type":"monthly","mode":"subway","price":"18.75","rides":0,"balance":"18.75"}
