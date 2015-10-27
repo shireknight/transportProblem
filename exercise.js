@@ -31,15 +31,17 @@ App.init = function(){
 
   rli.question(options, function(selection){
         // use switch statement for easier handling
+        var transaction = new Transaction();
+        console.log(transaction);
         switch(selection){
             case '1':
               rli.output.write("You've elected to purchase a new pass." + '\n');
-              Purchase();
+              transaction.purchase();
               break;
             case '2':
               // in the next sprint
               rli.output.write("You've elected to redeem you're current pass." + '\n');
-              Redeem();
+              transaction.redeem();
               break;
             default:
               rli.output.write("Please make a valid selection." + '\n');
@@ -47,17 +49,12 @@ App.init = function(){
               App.init();
               break;
         }
-
     });
-
 }
+
 
 App.init();
 
-
-// two data models
-var person = new Person();
-var pass = new Pass();
 
 function Person(){
   this.id = 0;
@@ -68,119 +65,145 @@ function Person(){
   this.creditCard = {};
 }
 
-function Pass(){
+function Pass(person){
   this.id = 0;
-  this.person = {};
+  this.person = person;
   this.type = '';
   this.mode = '';
   this.price = 0.00;
   this.rides = 0;
   this.balance = 0.00;
-  this.datePurchased = function(){
-     var d = new Date();
-     return d.getMonth() + '/' + d.getDate() + '/' + d.getYear();
-  }
+}
+
+/* Transaction controller bootstrap {sort of} */
+function Transaction(){
+  this.person = new Person();
+}
+
+Transaction.prototype.purchase = function(){
+    this.pass = new Pass(this.person);
+    this.purchase = new Purchase(this.pass);
+    this.purchase.date =
+    this.purchase.setName();
+}
+
+Transaction.prototype.redeem = function(){
+    var passData = [];
+
+    rli.question('Name:  ', function(name){
+        passData = getDataFromFile(passesData, name);
+        new Redeem(passData);
+    });
+
 }
 
 
-// our purchase controller
-function Purchase(){
-  // first step...
-  Purchase.setName();
+
+function Purchase(pass){
+   this.pass = pass;
+   this.pass.dateIssued = function(){
+      var d = new Date();
+      return d.getMonth() + '/' + d.getDate() + '/' + d.getYear();
+   };
 }
 
-// for the next sprint, add some validation here...
-Purchase.setName = function(){
+// start purchases here
+Purchase.prototype.setName = function(){
+  var that = this;
   rli.question('Name:  ', function(name){
-    person.name = name;
-    Purchase.setAge();
+    that.pass.person.name = name;
+    that.setAge();
   });
 }
 
-
-// or date of birth? easier this way...
-Purchase.setAge = function(){
+// purchase question #2
+Purchase.prototype.setAge = function(){
+  var that = this;
   rli.question('Age:  ', function(age){
-      if(isNaN(age)){
-        rli.output.write('Please enter a valid number.' + '\n');
-        Purchase.setAge();
-      }
-      else{
-        age = parseInt(age);
-        person.isSenior = (age >= 65) ? true : false;
-        Purchase.setPassType();
-      }
+    if(isNaN(age)){
+      rli.output.write('Please enter a valid number.' + '\n');
+      that.setAge();
+    }
+    else{
+      age = parseInt(age);
+      that.pass.person.isSenior = (age >= 65) ? true : false;
+    }
   });
 }
 
-
-Purchase.setPassType = function() {
+// purchase question #3
+Purchase.prototype.setPassType = function() {
+  var that = this;
   var options = "To select a prepaid pass, press 1. To select a monthly pass, press 2." + "\n";
 
   rli.question(options, function(selected){
     switch(selected){
       case '1':
-         pass.type = 'prepaid';
+         that.pass.type = 'prepaid';
          break;
       case '2':
-         pass.type = 'monthly';
+         that.pass.type = 'monthly';
          break;
       default:
+          // if we don't get a valid input, implement recursion
          rli.output.write('Please enter a valid selection.' + '\n');
-         Purchase.setPassType();
+         that.setPassType();
          break;
     }
     rli.output.write("You've selected a " + pass.type + " pass." + '\n');
-    Purchase.setModeOfTransport();
+    that.setModeOfTransport();
   });
 }
 
-
-Purchase.setModeOfTransport = function(){
-
+// purchase question #4
+Purchase.prototype.setModeOfTransport = function(){
+  var that = this;
   var options = 'Select mode of transport:' + '\n' + '(1 = Bus, 2 = Subway, 3 = Commuter Rail)' + '\n';
 
   rli.question(options, function(selected){
 
      switch(selected){
        case '1':
-          pass.mode = 'bus';
+          that.pass.mode = 'bus';
           break;
        case '2':
-          pass.mode = 'subway';
+          that.pass.mode = 'subway';
           break;
        case '3':
-          pass.mode = 'commuterRail';
+          that.pass.mode = 'commuterRail';
           break;
        default:
           rli.output.write('Please enter a valid selection.' + '\n');
-          Purchase.setModeOfTransport();
+          that.setModeOfTransport();
      }
      rli.output.write("You've selected " + pass.mode + "."  + '\n');
 
      // skip # of rides if they're purchasing a monthly pass
-     if(pass.type === 'prepaid'){
-       Purchase.setNumberOfRides();
+     if(that.pass.type === 'prepaid'){
+       that.setNumberOfRides();
      }else{
-       Purchase.setIsStudent();
+       that.setIsStudent();
      }
 
   });
 }
 
-//
-Purchase.setNumberOfRides = function(){
+// purchase question #5
+Purchase.prototype.setNumberOfRides = function(){
+   var that = this;
    rli.question('Number of rides: ', function(rides){
      if(isNaN(rides)){
        rli.output.write('Please enter a valid number.' + '\n');
      }else{
-       pass.rides = rides;
-       Purchase.setIsStudent();
+       that.pass.rides = rides;
+       that.setIsStudent();
      }
    })
 }
 
-Purchase.setIsStudent = function(){
+// purchase question #6
+Purchase.prototype.setIsStudent = function(){
+  var that = this;
   rli.question('Are you a student? (Y/N):  ', function(isStudent){
       switch(isStudent){
         case 'Y':
@@ -188,7 +211,7 @@ Purchase.setIsStudent = function(){
         case 'Yes':
         case 'yes':
         case '1':
-          person.isStudent = true;
+          that.pass.person.isStudent = true;
           break;
         case 'N':
         case 'n':
@@ -196,19 +219,19 @@ Purchase.setIsStudent = function(){
         case 'no':
         case '0':
         case '': // allow no answer to be registered as no
-          person.isStudent = false;
+          that.pass.person.isStudent = false;
           break;
         default:
           rli.output.write("Please enter 'Y' or 'N'."  + '\n');
-          Purchase.setIsStudent();
+          that.setIsStudent();
           break;
       }
-      Purchase.setIsEmployee();
+      that.setIsEmployee();
     });
 }
 
-
-Purchase.setIsEmployee = function(){
+// purchase question #7
+Purchase.prototype.setIsEmployee = function(){
   var isEmployee = false;
   rli.question('Do you work for the metropolitan transportation authority? (Y/N):  ', function(isEmployee){
       switch(isEmployee){
@@ -217,7 +240,7 @@ Purchase.setIsEmployee = function(){
         case 'Yes':
         case 'yes':
         case '1':
-          person.isEmployee = true;
+          that.pass.person.isEmployee = true;
           break;
         case 'N':
         case 'n':
@@ -225,61 +248,60 @@ Purchase.setIsEmployee = function(){
         case 'no':
         case '0':
         case '': // allow no answer to be registered as no
-          person.isEmployee = false;
+          that.pass.person.isEmployee = false;
           break;
         default:
           rli.output.write("Please enter 'Y' or 'N'" + '\n');
-          Purchase.isEmployee();
+          that.isEmployee();
           break;
       }
-      Purchase.getFair();
+      that.getFair();
     });
 }
 
-Purchase.getFair = function(type, mode){
-
-  var type = pass.type;
-  var mode = pass.mode;
-
+// conclude purchase
+Purchase.prototype.getFair = function(type, mode){
+  var that = this;
   // grab fairs and discounts from fairs.json
   fs.readFile(fairsData, 'utf8', function(err, data){
       if(err) throw err;
       data = JSON.parse(data);
-      var fairs = data.fairs[type];
+      var fairs = data.fairs[that.pass.type];
       // the normal fair for whichever mode of transport
-      var normalFair = (parseFloat(fairs[mode])).toFixed(2);
+      var normalFair = (parseFloat(fairs[that.pass.mode])).toFixed(2);
       // check for discounts
-      var price = Purchase.applyDiscounts(normalFair, data.discounts);
+      var price = that.applyDiscounts(normalFair, data.discounts);
       // if prepaid, apply the fair to multiple rides.
-      pass.price = (pass.type === 'prepaid') ? (price * pass.rides).toFixed(2) : (parseFloat(price)).toFixed(2);
+      that.pass.price = (type === 'prepaid') ? (price * that.pass.rides).toFixed(2) : (parseFloat(price)).toFixed(2);
       // until the user redeems the balance is the same as the price
-      pass.balance = pass.price;
+      that.pass.balance = that.pass.price;
 
-      rli.output.write("Price: $" + pass.price + '\n');
-      rli.output.write("Balance: $" + pass.balance + '\n');
+      rli.output.write("Price: $" + that.pass.price + '\n');
+      rli.output.write("Balance: $" + that.pass.balance + '\n');
 
-      Purchase.saveData();
+      // save the data to json files
+      that.saveData();
   });
   // rli.close();
 }
 
 // gets and applies discounts
-Purchase.applyDiscounts = function(normalFair, discounts){
+Purchase.prototype.applyDiscounts = function(normalFair, discounts){
     var fair = normalFair;
     var discount = 0;
 
     // currently the employee discount is free
-    if(person.isEmployee){
+    if(this.pass.person.isEmployee){
       var employeeDiscountRate = parseFloat(discounts['employee']);
       fair = (fair * employeeDiscountRate).toFixed(2);
     }
 
-    if(person.isSenior){
+    if(this.pass.person.isSenior){
        var seniorDiscountRate = parseFloat(discounts['senior']);
        fair = (fair * seniorDiscountRate).toFixed(2);
     }
 
-    if(person.isStudent){
+    if(this.pass.person.isStudent){
        var studentDiscountRate = parseFloat(discounts['student']);
        fair = (fair * studentDiscountRate).toFixed(2);
     }
@@ -289,10 +311,9 @@ Purchase.applyDiscounts = function(normalFair, discounts){
 }
 
 // save data needs to be debugged.
-Purchase.saveData = function(){
-  pass.person = person;
-  writeDataToFile(personsData, person);
-  writeDataToFile(passesData, pass);
+Purchase.prototype.saveData = function(){
+  writeDataToFile(personsData, this.person);
+  writeDataToFile(passesData, this.pass);
 
   rli.output.write("Thank you for your purchase!" + '\n');
   rli.close();
@@ -300,58 +321,121 @@ Purchase.saveData = function(){
   return true;
 }
 
-// kickoff redeem workflow
-function Redeem(){
-  // use the setName function from purchase
-  Redeem.setName();
+function Redeem(passData){
 
-  var passData = getDataFromFile(passesData, person.name);
-  console.log('Pass Data: ' + passData);
+  this.pass = {};
 
-  // bind this data the hard way for now
-  pass.id = passData.id;
-  pass.person = passData.person;
-  pass.type = passData.type;
-  pass.mode = passData.mode;
-  pass.price = passData.price;
-  pass.rides = passData.rides;
-  pass.balance = passData.balance;
-  pass.datePurchased = passData.datePurchased;
+  var purchases = [];
 
-  // if expired send them back to purchase screen
-  // Redeem.isExpired();
-
-  // add balance and redeem or just redeem
-  // Redeem.addBalance();
-  // Redeem.lowerBalance();
-
-}
-
-// for the next sprint, add some validation here...
-Redeem.setName = function(){
-  rli.question('Name:  ', function(name){
-    person.name = name;
+  passData.forEach(function(data){
+    var purchase = new Purchase(data);
+    purchases.push(purchase);
   });
+
+  this.purchases = purchases;
+
+  if(this.purchases.length > 1){
+    this.selectPass();
+  }else{
+    this.pass = this.purchases[0].pass;
+    this.redeemPass();
+  }
+
 }
 
-// check if its been more than 30 days since purchase
-Redeem.isExpired = function(){}
+Redeem.prototype.selectPass = function(){
 
-// subtract from prepaid pass
-Redeem.lowerBalance = function(){}
+  var questionBody = 'Select pass to redeem: ' + "\r\n";
 
-// check if its the weekend
-Redeem.isWeekend = function(){
-   var d = new Date();
-   var day = d.getDay();
-   var isWeekend = (day === 0 || day === 6);
-   return isWeekend;
+  for(var i=0; i<this.purchases.length; i++){
+    console.log(this.purchases[0].pass.balance);
+    questionBody += i + "). " + this.purchases[i].pass.dateIssued + " " + this.purchases[i].pass.balance;
+    questionBody += "\r\n";
+  }
+
+  var that = this;
+  rli.question(questionBody, function(selected){
+      var numSelected = parseInt(selected) - 1;
+      that.redeemPass(numSelected);
+  });
+
 }
 
-// add $$ to prepaid pass
-Redeem.addBalance = function(){}
+Redeem.prototype.redeemPass = function(){
 
+  this.pass = this.purchases[num].pass;
 
+  var that = this;
+  rli.question('Press 1 to Use, Press 2 to Add $$', function(input){
+    switch(input){
+      case '1':
+        that.lowerBalance(); // lower balance and ride
+      case '2':
+        that.addBalance();
+      default:
+        that.redeemPass();
+    }
+  })
+
+}
+
+// // kickoff redeem workflow
+// function Redeem(){
+//   // use the setName function from purchase
+//   this.setName();
+//
+//   var passData = getDataFromFile(passesData, this.person.name);
+//   console.log('Pass Data: ' + passData);
+//
+//   var pass = new Pass();
+//
+//   // bind this data the hard way for now
+//   pass.id = passData.id;
+//   pass.person = passData.person;
+//   pass.type = passData.type;
+//   pass.mode = passData.mode;
+//   pass.price = passData.price;
+//   pass.rides = passData.rides;
+//   pass.balance = passData.balance;
+//   pass.datePurchased = passData.datePurchased;
+//
+//   // if expired send them back to purchase screen
+//   // Redeem.isExpired();
+//
+//   // add balance and redeem or just redeem
+//   // Redeem.addBalance();
+//   // Redeem.lowerBalance();
+//
+// }
+//
+// // for the next sprint, add some validation here...
+// Redeem.prototype.setName = function(){
+//   rli.question('Name:  ', function(name){
+//     this.person.name = name;
+//   });
+// }
+//
+// // check if its been more than 30 days since purchase
+// Redeem.prototype.isExpired = function(){}
+//
+// // subtract from prepaid pass
+// Redeem.prototype.lowerBalance = function(){}
+//
+// // check if its the weekend
+// Redeem.prototype.isWeekend = function(){
+//    var d = new Date();
+//    var day = d.getDay();
+//    var isWeekend = (day === 0 || day === 6);
+//    return isWeekend;
+// }
+//
+// // add $$ to prepaid pass
+// Redeem.prototype.addBalance = function(){}
+//
+//
+//
+//
+//
 // file accessors
 function writeDataToFile(file, data){
   var encoding = 'utf8';
@@ -363,8 +447,10 @@ function writeDataToFile(file, data){
 
 // retrieve data from files...
 function getDataFromFile(file, name){
+  var records = [];
   var content = fs.readFileSync(file).toString().split('\n');
   content.forEach(function(data){
-    console.log(data.name);
+    records.push(data);
   });
+  return records;
 }
